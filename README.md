@@ -2,6 +2,7 @@
 
 Flutter Rocket.chat connector
 
+Fork from sdugene/rocket-chat-connector-flutter version 0.1.0
 ## Getting Started
 
 This project is a starting point for a Dart
