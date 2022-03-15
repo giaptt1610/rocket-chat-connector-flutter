@@ -10,6 +10,8 @@ class Room {
   String? topic;
   String? rid;
   List<String>? usernames;
+  String? fname;
+  String? name;
 
   Room({
     this.id,
@@ -21,6 +23,8 @@ class Room {
     this.topic,
     this.rid,
     this.usernames,
+    this.fname,
+    this.name,
   });
 
   Room.fromMap(Map<String, dynamic>? json) {
@@ -37,6 +41,8 @@ class Room {
       topic = json['topic'];
       usernames =
           usernames != null ? List<String>.from(json['usernames']) : null;
+      fname = json['fname'];
+      name = json['name'];
     }
   }
 
@@ -74,6 +80,15 @@ class Room {
   @override
   String toString() {
     return 'Room{id: $id, updatedAt: $updatedAt, t: $t, msgs: $msgs, ts: $ts, lm: $lm, topic: $topic, rid: $rid, usernames: $usernames}';
+  }
+
+  String getRecipentUser(String me) {
+    if (t == 'd') {
+      final users = usernames ?? [];
+      return users.firstWhere((element) => element != me, orElse: () => '');
+    }
+
+    return '';
   }
 
   @override

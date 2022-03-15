@@ -26,7 +26,8 @@ class RoomService {
     http.Response response = await _httpService.post(
       '/api/v1/im.create',
       jsonEncode(roomNew.toMap()),
-      authentication,
+      authToken: authentication.data?.authToken,
+      userId: authentication.data?.userId,
     );
 
     if (response.statusCode == 200) {
@@ -41,20 +42,26 @@ class RoomService {
 
   Future<RoomMessages> messages(
       Room room, Authentication authentication) async {
-    http.Response response = await _httpService.getWithFilter(
+    final response = await _httpService.getWithFilter(
       '/api/v1/im.messages',
       RoomFilter(room),
-      authentication,
+      authToken: authentication.data?.authToken,
+      userId: authentication.data?.userId,
     );
 
-    if (response.statusCode == 200) {
-      if (response.body.isNotEmpty == true) {
-        return RoomMessages.fromMap(jsonDecode(response.body));
-      } else {
-        return RoomMessages();
-      }
+    if (response.success) {
+      return RoomMessages.fromMap(response.data as Map<String, dynamic>);
     }
-    throw RocketChatException(response.body);
+
+    return RoomMessages();
+    // if (response.statusCode == 200) {
+    //   if (response.body.isNotEmpty == true) {
+    //     return RoomMessages.fromMap(jsonDecode(response.body));
+    //   } else {
+    //     return RoomMessages();
+    //   }
+    // }
+    // throw RocketChatException(response.body);
   }
 
   Future<bool> markAsRead(Room room, Authentication authentication) async {
@@ -63,7 +70,8 @@ class RoomService {
     http.Response response = await _httpService.post(
       '/api/v1/subscriptions.read',
       jsonEncode(body),
-      authentication,
+      authToken: authentication.data?.authToken,
+      userId: authentication.data?.userId,
     );
 
     if (response.statusCode == 200) {
@@ -78,37 +86,64 @@ class RoomService {
 
   Future<RoomMessages> history(
       RoomHistoryFilter filter, Authentication authentication) async {
-    http.Response response = await _httpService.getWithFilter(
+    final response = await _httpService.getWithFilter(
       '/api/v1/im.history',
       filter,
-      authentication,
+      authToken: authentication.data?.authToken,
+      userId: authentication.data?.userId,
     );
 
-    if (response.statusCode == 200) {
-      if (response.body.isNotEmpty == true) {
-        return RoomMessages.fromMap(jsonDecode(response.body));
-      } else {
-        return RoomMessages();
-      }
+    if (response.success) {
+      return RoomMessages.fromMap(response.data as Map<String, dynamic>);
     }
-    throw RocketChatException(response.body);
+
+    return RoomMessages();
+    // if (response.statusCode == 200) {
+    //   if (response.body.isNotEmpty == true) {
+    //     return RoomMessages.fromMap(jsonDecode(response.body));
+    //   } else {
+    //     return RoomMessages();
+    //   }
+    // }
+    // throw RocketChatException(response.body);
   }
 
   Future<RoomCounters> counters(
       RoomCountersFilter filter, Authentication authentication) async {
-    http.Response response = await _httpService.getWithFilter(
+    final response = await _httpService.getWithFilter(
       '/api/v1/im.counters',
       filter,
-      authentication,
+      authToken: authentication.data?.authToken,
+      userId: authentication.data?.userId,
     );
 
-    if (response.statusCode == 200) {
-      if (response.body.isNotEmpty == true) {
-        return RoomCounters.fromMap(jsonDecode(response.body));
-      } else {
-        return RoomCounters();
-      }
+    if (response.success) {
+      return RoomCounters.fromMap(response.data as Map<String, dynamic>);
     }
-    throw RocketChatException(response.body);
+
+    return RoomCounters();
+    // if (response.statusCode == 200) {
+    //   if (response.body.isNotEmpty == true) {
+    //     return RoomCounters.fromMap(jsonDecode(response.body));
+    //   } else {
+    //     return RoomCounters();
+    //   }
+    // }
+    // throw RocketChatException(response.body);
+  }
+
+  Future<List<Room>> getListRooms(Authentication authentication) async {
+    final response = await _httpService.get(
+      '/api/v1/rooms.get',
+      authToken: authentication.data?.authToken,
+      userId: authentication.data?.userId,
+    );
+
+    if (response.success) {
+      final list = (response.data as Map<String, dynamic>)['update'] as List;
+      return list.map((e) => Room.fromMap(e)).toList();
+    }
+
+    return [];
   }
 }

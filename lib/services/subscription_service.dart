@@ -12,18 +12,24 @@ class SubscriptionService {
   SubscriptionService(this._httpService);
 
   Future<Subscription> getSubscriptions(Authentication authentication) async {
-    http.Response response = await _httpService.get(
+    final response = await _httpService.get(
       '/api/v1/subscriptions.get',
-      authentication,
+      authToken: authentication.data?.authToken,
+      userId: authentication.data?.userId,
     );
 
-    if (response.statusCode == 200) {
-      if (response.body.isNotEmpty == true) {
-        return Subscription.fromMap(jsonDecode(response.body));
-      } else {
-        return Subscription();
-      }
+    if (response.success) {
+      return Subscription.fromMap(response.data as Map<String, dynamic>);
     }
-    throw RocketChatException(response.body);
+
+    return Subscription();
+    // if (response.statusCode == 200) {
+    //   if (response.body.isNotEmpty == true) {
+    //     return Subscription.fromMap(jsonDecode(response.body));
+    //   } else {
+    //     return Subscription();
+    //   }
+    // }
+    // throw RocketChatException(response.body);
   }
 }

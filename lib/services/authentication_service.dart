@@ -16,7 +16,6 @@ class AuthenticationService {
     http.Response response = await _httpService.post(
       '/api/v1/login',
       jsonEncode(body),
-      null,
     );
 
     if (response.statusCode == 200 && response.body.isNotEmpty == true) {
@@ -26,18 +25,24 @@ class AuthenticationService {
   }
 
   Future<User> me(Authentication authentication) async {
-    http.Response response = await _httpService.get(
+    final response = await _httpService.get(
       '/api/v1/me',
-      authentication,
+      authToken: authentication.data?.authToken,
+      userId: authentication.data?.userId,
     );
 
-    if (response.statusCode == 200) {
-      if (response.body.isNotEmpty == true) {
-        return User.fromMap(jsonDecode(response.body));
-      } else {
-        return User();
-      }
+    if (response.success) {
+      return User.fromMap(response.data as Map<String, dynamic>);
     }
-    throw RocketChatException(response.body);
+    return User();
+
+    // if (response.statusCode == 200) {
+    //   if (response.body.isNotEmpty == true) {
+    //     return User.fromMap(jsonDecode(response.body));
+    //   } else {
+    //     return User();
+    //   }
+    // }
+    // throw RocketChatException(response.body);
   }
 }

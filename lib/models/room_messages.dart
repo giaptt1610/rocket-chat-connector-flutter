@@ -43,11 +43,8 @@ class RoomMessages {
     Map<String, dynamic> map = {};
 
     if (messages != null) {
-      map['messages'] = messages
-              ?.where((json) => json != null)
-              ?.map((message) => message.toMap())
-              ?.toList() ??
-          [];
+      map['messages'] =
+          messages?.map((message) => message.toMap()).toList() ?? [];
     }
 
     if (count != null) {

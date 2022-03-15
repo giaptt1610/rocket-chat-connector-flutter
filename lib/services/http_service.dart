@@ -1,6 +1,8 @@
+import 'dart:convert';
+
 import 'package:http/http.dart' as http;
-import 'package:rocket_chat_connector_flutter/models/authentication.dart';
 import 'package:rocket_chat_connector_flutter/models/filters/filter.dart';
+import 'package:rocket_chat_connector_flutter/models/response/api_response.dart';
 
 class HttpService {
   Uri? _apiUrl;
@@ -9,48 +11,80 @@ class HttpService {
     _apiUrl = apiUrl;
   }
 
-  Future<http.Response> getWithFilter(
-          String uri, Filter filter, Authentication authentication) async =>
-      await http.get(
-          Uri.parse(
-              _apiUrl.toString() + uri + '?' + _urlEncode(filter.toMap())),
-          headers: await (_getHeaders(authentication)
-              as Future<Map<String, String>?>));
+  Future<ApiResponse> getWithFilter(
+    String uri,
+    Filter filter, {
+    String? authToken,
+    String? userId,
+  }) async {
+    final _uri = uri + '?' + _urlEncode(filter.toMap());
+    return get(_uri, authToken: authToken, userId: userId);
+  }
 
-  Future<http.Response> get(String uri, Authentication authentication) async =>
-      await http.get(Uri.parse(_apiUrl.toString() + uri),
-          headers: await (_getHeaders(authentication)
-              as Future<Map<String, String>?>));
+  Future<ApiResponse> get(
+    String uri, {
+    String? authToken,
+    String? userId,
+  }) async {
+    try {
+      final response = await http.get(Uri.parse(_apiUrl.toString() + uri),
+          headers: _getHeaders(authToken: authToken, userId: userId));
+      if (response.statusCode != 200) {
+        return ApiResponse(success: false, errorMsg: response.body);
+      }
+      final json = jsonDecode(response.body);
+      return ApiResponse(success: true, data: json);
+    } catch (e) {
+      print('Exception: ${e.toString()}');
+      return ApiResponse(success: false, errorMsg: e.toString());
+    }
+  }
 
   Future<http.Response> post(
-          String uri, String body, Authentication? authentication) async =>
-      await http.post(Uri.parse(_apiUrl.toString() + uri),
-          headers: await (_getHeaders(authentication)
-              as Future<Map<String, String>?>),
-          body: body);
+    String uri,
+    String body, {
+    String? authToken,
+    String? userId,
+  }) async =>
+      await http.post(
+        Uri.parse(_apiUrl.toString() + uri),
+        headers: _getHeaders(authToken: authToken, userId: userId),
+        body: body,
+      );
 
   Future<http.Response> put(
-          String uri, String body, Authentication authentication) async =>
-      await http.put(Uri.parse(_apiUrl.toString() + uri),
-          headers: await (_getHeaders(authentication)
-              as Future<Map<String, String>?>),
-          body: body);
+    String uri,
+    String body, {
+    String? authToken,
+    String? userId,
+  }) async =>
+      await http.put(
+        Uri.parse(_apiUrl.toString() + uri),
+        body: body,
+        headers: _getHeaders(authToken: authToken, userId: userId),
+      );
 
   Future<http.Response> delete(
-          String uri, Authentication authentication) async =>
-      await http.delete(Uri.parse(_apiUrl.toString() + uri),
-          headers: await (_getHeaders(authentication)
-              as Future<Map<String, String>?>));
+    String uri, {
+    String? authToken,
+    String? userId,
+  }) async =>
+      await http.delete(
+        Uri.parse(_apiUrl.toString() + uri),
+        headers: _getHeaders(authToken: authToken, userId: userId),
+      );
 
-  Future<Map<String, String?>> _getHeaders(
-      Authentication? authentication) async {
-    Map<String, String?> header = {
+  Map<String, String> _getHeaders({String? authToken, String? userId}) {
+    Map<String, String> header = {
       'Content-type': 'application/json',
     };
 
-    if (authentication?.status == "success") {
-      header['X-Auth-Token'] = authentication!.data!.authToken;
-      header['X-User-Id'] = authentication.data!.userId;
+    if (authToken != null) {
+      header['X-Auth-Token'] = authToken;
+    }
+
+    if (userId != null) {
+      header['X-User-Id'] = userId;
     }
 
     return header;

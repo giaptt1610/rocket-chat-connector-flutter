@@ -10,11 +10,9 @@ class MessageAttachmentField {
   });
 
   MessageAttachmentField.fromMap(Map<String, dynamic> json) {
-    if (json != null) {
-      short = json['short'];
-      title = json['title'];
-      value = json['value'];
-    }
+    short = json['short'];
+    title = json['title'];
+    value = json['value'];
   }
 
   Map<String, dynamic> toMap() => {

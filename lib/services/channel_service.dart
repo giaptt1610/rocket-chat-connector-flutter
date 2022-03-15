@@ -24,7 +24,8 @@ class ChannelService {
     http.Response response = await _httpService.post(
       '/api/v1/channels.create',
       jsonEncode(channelNew.toMap()),
-      authentication,
+      authToken: authentication.data?.authToken,
+      userId: authentication.data?.userId,
     );
 
     if (response.statusCode == 200) {
@@ -39,20 +40,26 @@ class ChannelService {
 
   Future<ChannelMessages> messages(
       Channel channel, Authentication authentication) async {
-    http.Response response = await _httpService.getWithFilter(
+    final response = await _httpService.getWithFilter(
       '/api/v1/channels.messages',
       ChannelFilter(channel),
-      authentication,
+      authToken: authentication.data?.authToken,
+      userId: authentication.data?.userId,
     );
 
-    if (response.statusCode == 200) {
-      if (response.body.isNotEmpty == true) {
-        return ChannelMessages.fromMap(jsonDecode(response.body));
-      } else {
-        return ChannelMessages();
-      }
+    if (response.success) {
+      return ChannelMessages.fromMap(response.data as Map<String, dynamic>);
     }
-    throw RocketChatException(response.body);
+
+    return ChannelMessages();
+    // if (response.statusCode == 200) {
+    //   if (response.body.isNotEmpty == true) {
+    //     return ChannelMessages.fromMap(jsonDecode(response.body));
+    //   } else {
+    //     return ChannelMessages();
+    //   }
+    // }
+    // throw RocketChatException(response.body);
   }
 
   Future<bool> markAsRead(
@@ -62,7 +69,8 @@ class ChannelService {
     http.Response response = await _httpService.post(
       '/api/v1/subscriptions.read',
       jsonEncode(body),
-      authentication,
+      authToken: authentication.data?.authToken,
+      userId: authentication.data?.userId,
     );
 
     if (response.statusCode == 200) {
@@ -77,39 +85,51 @@ class ChannelService {
 
   Future<ChannelMessages> history(
       ChannelHistoryFilter filter, Authentication authentication) async {
-    http.Response response = await _httpService.getWithFilter(
+    final response = await _httpService.getWithFilter(
       '/api/v1/channels.history',
       filter,
-      authentication,
+      authToken: authentication.data?.authToken,
+      userId: authentication.data?.userId,
     );
 
-    if (response.statusCode == 200) {
-      if (response.body.isNotEmpty == true) {
-        return ChannelMessages.fromMap(jsonDecode(response.body));
-      } else {
-        return ChannelMessages();
-      }
+    if (response.success) {
+      return ChannelMessages.fromMap(response.data as Map<String, dynamic>);
     }
-    throw RocketChatException(response.body);
+
+    return ChannelMessages();
+    // if (response.statusCode == 200) {
+    //   if (response.body.isNotEmpty == true) {
+    //     return ChannelMessages.fromMap(jsonDecode(response.body));
+    //   } else {
+    //     return ChannelMessages();
+    //   }
+    // }
+    // throw RocketChatException(response.body);
   }
 
   Future<ChannelCounters> counters(
     ChannelCountersFilter filter,
     Authentication authentication,
   ) async {
-    http.Response response = await _httpService.getWithFilter(
+    final response = await _httpService.getWithFilter(
       '/api/v1/channels.counters',
       filter,
-      authentication,
+      authToken: authentication.data?.authToken,
+      userId: authentication.data?.userId,
     );
 
-    if (response.statusCode == 200) {
-      if (response.body.isNotEmpty == true) {
-        return ChannelCounters.fromMap(jsonDecode(response.body));
-      } else {
-        return ChannelCounters();
-      }
+    if (response.success) {
+      return ChannelCounters.fromMap(response.data as Map<String, dynamic>);
     }
-    throw RocketChatException(response.body);
+
+    return ChannelCounters();
+    // if (response.statusCode == 200) {
+    //   if (response.body.isNotEmpty == true) {
+    //     return ChannelCounters.fromMap(jsonDecode(response.body));
+    //   } else {
+    //     return ChannelCounters();
+    //   }
+    // }
+    // throw RocketChatException(response.body);
   }
 }

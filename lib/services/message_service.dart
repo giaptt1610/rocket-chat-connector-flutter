@@ -17,7 +17,8 @@ class MessageService {
     http.Response response = await _httpService.post(
       '/api/v1/chat.postMessage',
       jsonEncode(message.toMap()),
-      authentication,
+      authToken: authentication.data?.authToken,
+      userId: authentication.data?.userId,
     );
 
     if (response.statusCode == 200) {

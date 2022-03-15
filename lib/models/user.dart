@@ -101,11 +101,7 @@ class User {
       map['name'] = name;
     }
     if (emails != null) {
-      map['emails'] = emails
-              ?.where((json) => json != null)
-              ?.map((email) => email.toMap())
-              ?.toList() ??
-          [];
+      map['emails'] = emails?.map((email) => email.toMap()).toList() ?? [];
     }
     if (status != null) {
       map['status'] = status;
@@ -123,7 +119,7 @@ class User {
       map['active'] = active;
     }
     if (roles != null) {
-      map['roles'] = roles?.where((json) => json != null)?.toList() ?? [];
+      map['roles'] = roles ?? [];
     }
     if (settings != null) {
       map['settings'] = settings != null

@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:rocket_chat_connector_flutter/models/authentication.dart';
 import 'package:rocket_chat_connector_flutter/models/channel.dart';
 import 'package:rocket_chat_connector_flutter/models/room.dart';
 import 'package:rocket_chat_connector_flutter/models/user.dart';
@@ -8,11 +7,10 @@ import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class WebSocketService {
-  WebSocketChannel connectToWebSocket(
-      String url, Authentication authentication) {
+  WebSocketChannel connectToWebSocket(String url, String authToken) {
     WebSocketChannel webSocketChannel = IOWebSocketChannel.connect(url);
     _sendConnectRequest(webSocketChannel);
-    _sendLoginRequest(webSocketChannel, authentication);
+    _sendLoginRequest(webSocketChannel, authToken);
     return webSocketChannel;
   }
 
@@ -25,14 +23,13 @@ class WebSocketService {
     webSocketChannel.sink.add(jsonEncode(msg));
   }
 
-  void _sendLoginRequest(
-      WebSocketChannel webSocketChannel, Authentication authentication) {
+  void _sendLoginRequest(WebSocketChannel webSocketChannel, String authToken) {
     Map msg = {
       "msg": "method",
       "method": "login",
       "id": "42",
       "params": [
-        {"resume": authentication.data!.authToken}
+        {"resume": authToken}
       ]
     };
 
@@ -124,6 +121,29 @@ class WebSocketService {
       "method": "UserPresence:setDefaultStatus",
       "id": "42",
       "params": ["online"]
+    };
+    webSocketChannel.sink.add(jsonEncode(msg));
+  }
+
+  void sendPongMsg(WebSocketChannel webSocketChannel) {
+    webSocketChannel.sink.add(jsonEncode({'msg': 'pong'}));
+  }
+
+  void loadHistory(
+    WebSocketChannel webSocketChannel,
+    Room room, {
+    int limit = 50,
+  }) {
+    Map msg = {
+      "msg": "method",
+      "method": "loadHistory",
+      "id": "42",
+      "params": [
+        room.id,
+        null,
+        limit,
+        {"\$date": 1480377601}
+      ]
     };
     webSocketChannel.sink.add(jsonEncode(msg));
   }

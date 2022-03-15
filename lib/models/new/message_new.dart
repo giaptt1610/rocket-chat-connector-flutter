@@ -68,11 +68,8 @@ class MessageNew {
       map['text'] = text;
     }
     if (attachments != null) {
-      map['attachments'] = attachments
-              ?.where((json) => json != null)
-              ?.map((attachment) => attachment.toMap())
-              ?.toList() ??
-          [];
+      map['attachments'] =
+          attachments?.map((attachment) => attachment.toMap()).toList() ?? [];
     }
 
     return map;

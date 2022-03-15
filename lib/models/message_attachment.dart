@@ -82,8 +82,8 @@ class MessageAttachment {
         'color': color,
         'fields': fields
                 ?.where((json) => json != null)
-                ?.map((field) => field.toMap())
-                ?.toList() ??
+                .map((field) => field.toMap())
+                .toList() ??
             [],
         'image_url': imageUrl,
         'message_link': messageLink,

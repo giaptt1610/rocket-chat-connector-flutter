@@ -52,61 +52,57 @@ class Message {
     this.urls,
   });
 
-  Message.fromMap(Map<String, dynamic>? json) {
-    if (json != null) {
-      alias = json['alias'];
-      msg = json['msg'];
-      parseUrls = json['parseUrls'];
-      bot = json['bot'] != null ? Bot.fromMap(json['bot']) : null;
-      groupable = json['groupable'];
-      t = json['t'];
-      ts = json['ts'] != null ? DateTime.parse(json['ts']) : null;
-      user = json['u'] != null ? User.fromMap(json['u']) : null;
-      rid = json['rid'];
-      updatedAt = json['_updatedAt'] != null
-          ? DateTime.parse(json['_updatedAt'])
-          : null;
-      id = json['_id'];
+  Message.fromMap(Map<String, dynamic> json) {
+    alias = json['alias'];
+    msg = json['msg'];
+    parseUrls = json['parseUrls'];
+    bot = json['bot'] != null ? Bot.fromMap(json['bot']) : null;
+    groupable = json['groupable'];
+    t = json['t'];
+    ts = DateTime.tryParse('${json['ts']['\$date']}');
+    user = json['u'] != null ? User.fromMap(json['u']) : null;
+    rid = json['rid'];
+    updatedAt =
+        json['_updatedAt'] != null ? DateTime.parse(json['_updatedAt']) : null;
+    id = json['_id'];
 
-      if (json['reactions'] != null) {
-        Map<String, dynamic> reactionMap =
-            Map<String, dynamic>.from(json['reactions']);
-        reactions = reactionMap.map((a, b) => MapEntry(a, Reaction.fromMap(b)));
-      }
-
-      if (json['mentions'] != null) {
-        List<dynamic> jsonList = json['mentions'].runtimeType == String //
-            ? jsonDecode(json['mentions'])
-            : json['mentions'];
-        mentions = jsonList
-            .where((json) => json != null)
-            .map((json) => Mention.fromMap(json))
-            .toList();
-      }
-      channels =
-          json['channels'] != null ? List<String>.from(json['channels']) : null;
-      starred = json['starred'] != null
-          ? Map<String, String>.from(json['starred'])
-          : null;
-      emoji = json['emoji'];
-      avatar = json['avatar'];
-
-      if (json['attachments'] != null) {
-        List<dynamic> jsonList = json['attachments'].runtimeType == String //
-            ? jsonDecode(json['attachments'])
-            : json['attachments'];
-        attachments = jsonList
-            .where((json) => json != null)
-            .map((json) => MessageAttachment.fromMap(json))
-            .toList();
-      }
-
-      editedBy =
-          json['editedBy'] != null ? User.fromMap(json['editedBy']) : null;
-      editedAt =
-          json['editedAt'] != null ? DateTime.parse(json['editedAt']) : null;
-      urls = json['urls'] != null ? List<String>.from(json['urls']) : null;
+    if (json['reactions'] != null) {
+      Map<String, dynamic> reactionMap =
+          Map<String, dynamic>.from(json['reactions']);
+      reactions = reactionMap.map((a, b) => MapEntry(a, Reaction.fromMap(b)));
     }
+
+    if (json['mentions'] != null) {
+      List<dynamic> jsonList = json['mentions'].runtimeType == String //
+          ? jsonDecode(json['mentions'])
+          : json['mentions'];
+      mentions = jsonList
+          .where((json) => json != null)
+          .map((json) => Mention.fromMap(json))
+          .toList();
+    }
+    channels =
+        json['channels'] != null ? List<String>.from(json['channels']) : null;
+    starred = json['starred'] != null
+        ? Map<String, String>.from(json['starred'])
+        : null;
+    emoji = json['emoji'];
+    avatar = json['avatar'];
+
+    if (json['attachments'] != null) {
+      List<dynamic> jsonList = json['attachments'].runtimeType == String //
+          ? jsonDecode(json['attachments'])
+          : json['attachments'];
+      attachments = jsonList
+          .where((json) => json != null)
+          .map((json) => MessageAttachment.fromMap(json))
+          .toList();
+    }
+
+    editedBy = json['editedBy'] != null ? User.fromMap(json['editedBy']) : null;
+    editedAt =
+        json['editedAt'] != null ? DateTime.parse(json['editedAt']) : null;
+    urls = json['urls'] != null ? List<String>.from(json['urls']) : null;
   }
 
   Map<String, dynamic> toMap() {
@@ -149,11 +145,8 @@ class Message {
       map['reactions'] = reactions!.map((a, b) => MapEntry(a, b.toMap()));
     }
     if (mentions != null) {
-      map['mentions'] = mentions
-              ?.where((json) => json != null)
-              ?.map((mention) => mention.toMap())
-              ?.toList() ??
-          [];
+      map['mentions'] =
+          mentions?.map((mention) => mention.toMap()).toList() ?? [];
     }
     if (channels != null) {
       map['channels'] = channels;
@@ -168,11 +161,8 @@ class Message {
       map['avatar'] = avatar;
     }
     if (attachments != null) {
-      map['attachments'] = attachments
-              ?.where((json) => json != null)
-              ?.map((attachment) => attachment.toMap())
-              ?.toList() ??
-          [];
+      map['attachments'] =
+          attachments?.map((attachment) => attachment.toMap()).toList() ?? [];
     }
     if (editedBy != null) {
       map['editedBy'] = editedBy != null ? editedBy!.toMap() : null;

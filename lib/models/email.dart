@@ -3,10 +3,8 @@ class Email {
   bool? verified;
 
   Email.fromMap(Map<String, dynamic> json) {
-    if (json != null) {
-      address = json['address'];
-      verified = json['verified'];
-    }
+    address = json['address'];
+    verified = json['verified'];
   }
 
   Map<String, dynamic> toMap() => {
