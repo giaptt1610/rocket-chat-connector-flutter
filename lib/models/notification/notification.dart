@@ -3,6 +3,10 @@ import 'notification_fields.dart';
 import 'notification_result.dart';
 import 'notification_type.dart';
 
+export 'notification_fields.dart';
+export 'notification_result.dart';
+export 'notification_type.dart';
+
 class Notification {
   NotificationType? msg;
   String? collection;

@@ -1,4 +1,4 @@
-import '../models/user.dart';
+import '../user.dart';
 import 'notification_payload.dart';
 
 class NotificationArgs {
