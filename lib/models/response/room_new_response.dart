@@ -1,4 +1,4 @@
-import 'package:rocket_chat_connector_flutter/models/room.dart';
+import '../room.dart';
 
 class RoomNewResponse {
   Room? room;

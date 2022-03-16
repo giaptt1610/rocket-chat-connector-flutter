@@ -1,18 +1,6 @@
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
-import 'package:rocket_chat_connector_flutter/exceptions/exception.dart';
-import 'package:rocket_chat_connector_flutter/models/authentication.dart';
-import 'package:rocket_chat_connector_flutter/models/filters/room_counters_filter.dart';
-import 'package:rocket_chat_connector_flutter/models/filters/room_filter.dart';
-import 'package:rocket_chat_connector_flutter/models/filters/room_history_filter.dart';
-import 'package:rocket_chat_connector_flutter/models/new/room_new.dart';
-import 'package:rocket_chat_connector_flutter/models/response/response.dart';
-import 'package:rocket_chat_connector_flutter/models/response/room_new_response.dart';
-import 'package:rocket_chat_connector_flutter/models/room.dart';
-import 'package:rocket_chat_connector_flutter/models/room_counters.dart';
-import 'package:rocket_chat_connector_flutter/models/room_messages.dart';
-import 'package:rocket_chat_connector_flutter/services/http_service.dart';
+import '../rocket_chat_connector.dart';
 
 class RoomService {
   HttpService _httpService;
@@ -23,21 +11,18 @@ class RoomService {
     RoomNew roomNew,
     Authentication authentication,
   ) async {
-    http.Response response = await _httpService.post(
+    final response = await _httpService.post(
       '/api/v1/im.create',
       jsonEncode(roomNew.toMap()),
       authToken: authentication.data?.authToken,
       userId: authentication.data?.userId,
     );
 
-    if (response.statusCode == 200) {
-      if (response.body.isNotEmpty == true) {
-        return RoomNewResponse.fromMap(jsonDecode(response.body));
-      } else {
-        return RoomNewResponse();
-      }
+    if (response.success) {
+      return RoomNewResponse.fromMap(response.data as Map<String, dynamic>);
     }
-    throw RocketChatException(response.body);
+
+    return RoomNewResponse();
   }
 
   Future<RoomMessages> messages(
@@ -54,34 +39,23 @@ class RoomService {
     }
 
     return RoomMessages();
-    // if (response.statusCode == 200) {
-    //   if (response.body.isNotEmpty == true) {
-    //     return RoomMessages.fromMap(jsonDecode(response.body));
-    //   } else {
-    //     return RoomMessages();
-    //   }
-    // }
-    // throw RocketChatException(response.body);
   }
 
   Future<bool> markAsRead(Room room, Authentication authentication) async {
     Map<String, String?> body = {"rid": room.id};
 
-    http.Response response = await _httpService.post(
+    final response = await _httpService.post(
       '/api/v1/subscriptions.read',
       jsonEncode(body),
       authToken: authentication.data?.authToken,
       userId: authentication.data?.userId,
     );
 
-    if (response.statusCode == 200) {
-      if (response.body.isNotEmpty == true) {
-        return Response.fromMap(jsonDecode(response.body)).success == true;
-      } else {
-        return false;
-      }
+    if (response.success) {
+      return Response.fromMap(response.data as Map<String, dynamic>).success ??
+          false;
     }
-    throw RocketChatException(response.body);
+    return false;
   }
 
   Future<RoomMessages> history(
@@ -98,14 +72,6 @@ class RoomService {
     }
 
     return RoomMessages();
-    // if (response.statusCode == 200) {
-    //   if (response.body.isNotEmpty == true) {
-    //     return RoomMessages.fromMap(jsonDecode(response.body));
-    //   } else {
-    //     return RoomMessages();
-    //   }
-    // }
-    // throw RocketChatException(response.body);
   }
 
   Future<RoomCounters> counters(
@@ -122,14 +88,6 @@ class RoomService {
     }
 
     return RoomCounters();
-    // if (response.statusCode == 200) {
-    //   if (response.body.isNotEmpty == true) {
-    //     return RoomCounters.fromMap(jsonDecode(response.body));
-    //   } else {
-    //     return RoomCounters();
-    //   }
-    // }
-    // throw RocketChatException(response.body);
   }
 
   Future<List<Room>> getListRooms(Authentication authentication) async {

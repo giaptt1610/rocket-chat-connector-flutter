@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:rocket_chat_connector_flutter/models/filters/filter.dart';
-import 'package:rocket_chat_connector_flutter/models/response/api_response.dart';
+import '../models/filters/filter.dart';
+import '../models/response/api_response.dart';
 
 class HttpService {
   Uri? _apiUrl;
@@ -40,17 +40,27 @@ class HttpService {
     }
   }
 
-  Future<http.Response> post(
+  Future<ApiResponse> post(
     String uri,
     String body, {
     String? authToken,
     String? userId,
-  }) async =>
-      await http.post(
+  }) async {
+    try {
+      final response = await http.post(
         Uri.parse(_apiUrl.toString() + uri),
         headers: _getHeaders(authToken: authToken, userId: userId),
         body: body,
       );
+      if (response.statusCode != 200) {
+        return ApiResponse(success: false, errorMsg: response.body);
+      }
+      final json = jsonDecode(response.body);
+      return ApiResponse(success: true, data: json);
+    } catch (e) {
+      return ApiResponse(success: false, errorMsg: e.toString());
+    }
+  }
 
   Future<http.Response> put(
     String uri,

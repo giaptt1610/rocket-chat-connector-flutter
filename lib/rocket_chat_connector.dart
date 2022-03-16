@@ -17,6 +17,13 @@ export 'models/subscription_update.dart';
 export 'models/subscription.dart';
 export 'models/user.dart';
 export 'models/notification/notification.dart';
+export 'models/new/channel_new.dart';
+export 'models/new/message_new.dart';
+export 'models/new/room_new.dart';
+export 'models/new/user_new.dart';
+
+export 'models/response/response.dart';
+export 'models/filters/filter.dart';
 
 export 'services/authentication_service.dart';
 export 'services/channel_service.dart';

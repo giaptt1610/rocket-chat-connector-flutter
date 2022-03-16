@@ -1,10 +1,4 @@
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
-import 'package:rocket_chat_connector_flutter/exceptions/exception.dart';
-import 'package:rocket_chat_connector_flutter/models/authentication.dart';
-import 'package:rocket_chat_connector_flutter/models/subscription.dart';
-import 'package:rocket_chat_connector_flutter/services/http_service.dart';
+import '../rocket_chat_connector.dart';
 
 class SubscriptionService {
   HttpService _httpService;
@@ -23,13 +17,5 @@ class SubscriptionService {
     }
 
     return Subscription();
-    // if (response.statusCode == 200) {
-    //   if (response.body.isNotEmpty == true) {
-    //     return Subscription.fromMap(jsonDecode(response.body));
-    //   } else {
-    //     return Subscription();
-    //   }
-    // }
-    // throw RocketChatException(response.body);
   }
 }

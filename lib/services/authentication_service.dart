@@ -1,10 +1,6 @@
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
-import 'package:rocket_chat_connector_flutter/exceptions/exception.dart';
-import 'package:rocket_chat_connector_flutter/models/authentication.dart';
-import 'package:rocket_chat_connector_flutter/models/user.dart';
-import 'package:rocket_chat_connector_flutter/services/http_service.dart';
+import '../rocket_chat_connector.dart';
 
 class AuthenticationService {
   HttpService _httpService;
@@ -13,15 +9,16 @@ class AuthenticationService {
 
   Future<Authentication> login(String user, String password) async {
     Map<String, String> body = {'user': user, 'password': password};
-    http.Response response = await _httpService.post(
+    final response = await _httpService.post(
       '/api/v1/login',
       jsonEncode(body),
     );
 
-    if (response.statusCode == 200 && response.body.isNotEmpty == true) {
-      return Authentication.fromMap(jsonDecode(response.body));
+    if (response.success) {
+      return Authentication.fromMap(response.data as Map<String, dynamic>);
     }
-    throw RocketChatException(response.body);
+
+    return Authentication(status: 'error');
   }
 
   Future<User> me(Authentication authentication) async {
@@ -35,14 +32,5 @@ class AuthenticationService {
       return User.fromMap(response.data as Map<String, dynamic>);
     }
     return User();
-
-    // if (response.statusCode == 200) {
-    //   if (response.body.isNotEmpty == true) {
-    //     return User.fromMap(jsonDecode(response.body));
-    //   } else {
-    //     return User();
-    //   }
-    // }
-    // throw RocketChatException(response.body);
   }
 }
