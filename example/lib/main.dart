@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:example/message_bubble.dart';
+import 'package:example/message_compose.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:rocket_chat_connector_flutter/models/authentication.dart';
@@ -58,8 +60,9 @@ class _MyHomePageState extends State<MyHomePage> {
   WebSocketChannel? webSocketChannel;
   WebSocketService webSocketService = WebSocketService();
   User? user;
-  // StreamController<String> eventStream = StreamController();
+
   StreamController<List<Message>> messagesStream = StreamController();
+  StreamController pingPongStream = StreamController();
 
   RoomService _roomService = RoomService(rocketHttpService);
   RoomMessages? roomMessages;
@@ -82,15 +85,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
             webSocketService.loadHistory(webSocketChannel!, room);
             webSocketChannel!.stream.listen((event) {
-              // eventStream.add(event);
               _handleServerEvent(event);
             });
-
-            // Stream.fromFuture(
-            //         _roomService.history(RoomHistoryFilter(room), authData!))
-            //     .listen((event) {
-            //   messagesStream.sink.add(event.messages ?? []);
-            // });
 
             return _getScaffold();
           } else {
@@ -104,86 +100,87 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      body: SafeArea(
+        child: Stack(
           children: [
-            /// get room/channel message
             Container(
-              height: 80,
-              child: FutureBuilder<List<Room>>(
-                future: _roomService.getListRooms(authData!),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) return Container();
-                  List<Room> rooms = snapshot.data ?? [];
-                  return ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: rooms.length,
-                    itemBuilder: (context, index) {
-                      return Container(
-                        width: 80,
-                        child: Text(rooms[index].name ??
-                            rooms[index].getRecipentUser(user!.username!)),
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-            Expanded(
-              child: StreamBuilder(
-                stream: messagesStream.stream,
-                builder: (context, snapshot) {
-                  // print(snapshot.data);
-                  // rocket_notification.Notification? notification =
-                  //     snapshot.hasData
-                  //         ? rocket_notification.Notification.fromMap(
-                  //             jsonDecode(snapshot.data as String))
-                  //         : null;
-                  // print(notification);
-                  // webSocketService.streamNotifyUserSubscribe(
-                  //     webSocketChannel!, user!);
-                  if (!snapshot.hasData) {
-                    return Container();
-                  }
-
-                  if (snapshot.hasError) {
-                    return Text(snapshot.error.toString());
-                  }
-                  final msgs = snapshot.data as List<Message>;
-
-                  return ListView.separated(
-                    itemCount: msgs.length,
-                    separatorBuilder: (context, index) => Divider(height: 1),
-                    itemBuilder: (context, index) => ListTile(
-                      title: Text(msgs[index].msg ?? 'none'),
+              margin: const EdgeInsets.only(bottom: 50.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 80,
+                    child: FutureBuilder<List<Room>>(
+                      future: _roomService.getListRooms(authData!),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) return Container();
+                        List<Room> rooms = snapshot.data ?? [];
+                        return ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: rooms.length,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              width: 80,
+                              child: Text(rooms[index].name ??
+                                  rooms[index]
+                                      .getRecipentUser(user!.username!)),
+                            );
+                          },
+                        );
+                      },
                     ),
-                  );
+                  ),
+                  Container(
+                    height: 20,
+                    child: StreamBuilder(
+                      stream: pingPongStream.stream,
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return Container();
+                        }
+                        return Text('${snapshot.data.toString()}');
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: StreamBuilder(
+                      stream: messagesStream.stream,
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return Container();
+                        }
 
-                  // return Padding(
-                  //   padding: const EdgeInsets.symmetric(vertical: 24.0),
-                  //   child: Text(
-                  //       notification != null ? '${notification.toString()}' : ''),
-                  // );
-                },
+                        if (snapshot.hasError) {
+                          return Text(snapshot.error.toString());
+                        }
+                        final msgs = snapshot.data as List<Message>;
+
+                        return ListView.separated(
+                            reverse: true,
+                            itemCount: msgs.length,
+                            separatorBuilder: (context, index) =>
+                                Divider(height: 1),
+                            itemBuilder: (context, index) => MessageBubble(
+                                  message: msgs[index],
+                                  myUserName: user!.username!,
+                                ));
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
-
-            Container(
-              height: 50,
-              child: TextFormField(
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: MessageCompose(
                 controller: _controller,
-                decoration: InputDecoration(labelText: 'Send a message'),
+                onSend: _sendMessage,
               ),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _sendMessage,
-        tooltip: 'Send message',
-        child: Icon(Icons.send),
       ),
     );
   }
@@ -202,7 +199,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void dispose() {
     webSocketChannel?.sink.close();
     messagesStream.sink.close();
-    // eventStream.sink.close();
+    pingPongStream.sink.close();
     super.dispose();
   }
 
@@ -225,7 +222,8 @@ class _MyHomePageState extends State<MyHomePage> {
         }
       } else if (_msg == 'ping') {
         webSocketService.sendPongMsg(webSocketChannel!);
-      }
+        pingPongStream.sink.add(event);
+      } else if (_msg == 'changed') {}
     } catch (e) {
       print('${e.toString()}');
     }

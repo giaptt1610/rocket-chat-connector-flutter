@@ -236,4 +236,8 @@ class Message {
       editedBy.hashCode ^
       editedAt.hashCode ^
       urls.hashCode;
+
+  bool isMine(String myUsername) {
+    return user?.username == myUsername;
+  }
 }
