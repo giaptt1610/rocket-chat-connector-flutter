@@ -63,7 +63,11 @@ class Message {
     ts = DateTime.tryParse('${json['ts']['\$date']}');
     user = json['u'] != null ? User.fromMap(json['u']) : null;
     rid = json['rid'];
-    updatedAt = DateTime.tryParse('${json['_updatedAt']['\$date']}');
+    if (json['_updatedAt']['\$date'] != null) {
+      updatedAt =
+          DateTime.fromMillisecondsSinceEpoch(json['_updatedAt']['\$date']);
+    }
+
     id = json['_id'];
 
     if (json['reactions'] != null) {

@@ -1,25 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:example/message_bubble.dart';
-import 'package:example/message_compose.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:rocket_chat_connector_flutter/models/authentication.dart';
-import 'package:rocket_chat_connector_flutter/models/channel.dart';
-import 'package:rocket_chat_connector_flutter/models/filters/room_history_filter.dart';
-import 'package:rocket_chat_connector_flutter/models/message.dart';
-import 'package:rocket_chat_connector_flutter/models/room.dart';
-import 'package:rocket_chat_connector_flutter/models/room_messages.dart';
-import 'package:rocket_chat_connector_flutter/models/user.dart';
-import 'package:rocket_chat_connector_flutter/services/authentication_service.dart';
-import 'package:rocket_chat_connector_flutter/services/http_service.dart'
-    as rocket_http_service;
-import 'package:rocket_chat_connector_flutter/services/room_service.dart';
-import 'package:rocket_chat_connector_flutter/web_socket/notification.dart'
-    as rocket_notification;
-import 'package:rocket_chat_connector_flutter/web_socket/web_socket_service.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:rocket_chat_connector_flutter/rocket_chat_connector.dart'
+    as rocket;
+
+import 'message_bubble.dart';
+import 'message_compose.dart';
 
 void main() => runApp(MyApp());
 
@@ -27,10 +16,10 @@ final String serverUrl = "http://10.1.38.174:3000";
 final String webSocketUrl = "ws://10.1.38.174:3000/websocket";
 final String username = "giaptt";
 final String password = "576173987";
-final Channel channel = Channel(id: "myChannelId");
-final Room room = Room(id: "9gKZbi7wi7H8zSdn3");
-final rocket_http_service.HttpService rocketHttpService =
-    rocket_http_service.HttpService(Uri.parse(serverUrl));
+final rocket.Channel channel = rocket.Channel(id: "myChannelId");
+final rocket.Room room = rocket.Room(id: "9gKZbi7wi7H8zSdn3");
+final rocket.HttpService rocketHttpService =
+    rocket.HttpService(Uri.parse(serverUrl));
 
 class MyApp extends StatelessWidget {
   @override
@@ -58,21 +47,24 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   TextEditingController _controller = TextEditingController();
   WebSocketChannel? webSocketChannel;
-  WebSocketService webSocketService = WebSocketService();
-  User? user;
+  rocket.WebSocketService webSocketService = rocket.WebSocketService();
+  rocket.User? user;
 
-  StreamController<List<Message>> messagesStream = StreamController();
+  // ignore: close_sinks
+  StreamController<List<rocket.Message>> messagesStream = StreamController();
+  // ignore: close_sinks
   StreamController pingPongStream = StreamController();
 
-  RoomService _roomService = RoomService(rocketHttpService);
-  RoomMessages? roomMessages;
-  Authentication? authData;
+  rocket.RoomService _roomService = rocket.RoomService(rocketHttpService);
+  rocket.RoomMessages? roomMessages;
+  rocket.Authentication? authData;
+  List<rocket.Message> _messages = [];
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Authentication>(
+    return FutureBuilder<rocket.Authentication>(
         future: getAuthentication(),
-        builder: (context, AsyncSnapshot<Authentication> snapshot) {
+        builder: (context, AsyncSnapshot<rocket.Authentication> snapshot) {
           if (snapshot.hasData) {
             authData = snapshot.data!;
             user = authData!.data!.me;
@@ -84,18 +76,21 @@ class _MyHomePageState extends State<MyHomePage> {
                 webSocketChannel!, user!);
 
             webSocketService.loadHistory(webSocketChannel!, room);
+            webSocketService.streamRoomMessagesSubscribe(
+                webSocketChannel!, room);
             webSocketChannel!.stream.listen((event) {
               _handleServerEvent(event);
             });
 
-            return _getScaffold();
+            return _getScaffold(context);
           } else {
             return Center(child: CircularProgressIndicator());
           }
         });
   }
 
-  Scaffold _getScaffold() {
+  Scaffold _getScaffold(BuildContext context) {
+    final _maxWidth = MediaQuery.of(context).size.width * 0.8;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -110,11 +105,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   Container(
                     height: 80,
-                    child: FutureBuilder<List<Room>>(
+                    child: FutureBuilder<List<rocket.Room>>(
                       future: _roomService.getListRooms(authData!),
                       builder: (context, snapshot) {
                         if (!snapshot.hasData) return Container();
-                        List<Room> rooms = snapshot.data ?? [];
+                        List<rocket.Room> rooms = snapshot.data ?? [];
                         return ListView.builder(
                           scrollDirection: Axis.horizontal,
                           itemCount: rooms.length,
@@ -153,7 +148,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         if (snapshot.hasError) {
                           return Text(snapshot.error.toString());
                         }
-                        final msgs = snapshot.data as List<Message>;
+                        final msgs = snapshot.data as List<rocket.Message>;
 
                         return ListView.separated(
                             reverse: true,
@@ -161,6 +156,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             separatorBuilder: (context, index) =>
                                 Divider(height: 1),
                             itemBuilder: (context, index) => MessageBubble(
+                                  maxWidth: _maxWidth,
                                   message: msgs[index],
                                   myUserName: user!.username!,
                                 ));
@@ -187,8 +183,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _sendMessage() {
     if (_controller.text.isNotEmpty) {
-      webSocketService.sendMessageOnChannel(
-          _controller.text, webSocketChannel!, channel);
+      // webSocketService.sendMessageOnChannel(
+      //     _controller.text, webSocketChannel!, channel);
       webSocketService.sendMessageOnRoom(
           _controller.text, webSocketChannel!, room);
       _controller.clear();
@@ -197,21 +193,22 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
+    webSocketService.streamRoomMessagesUnsubscribe(webSocketChannel!, room);
     webSocketChannel?.sink.close();
     messagesStream.sink.close();
     pingPongStream.sink.close();
     super.dispose();
   }
 
-  Future<Authentication> getAuthentication() async {
-    final AuthenticationService authenticationService =
-        AuthenticationService(rocketHttpService);
+  Future<rocket.Authentication> getAuthentication() async {
+    final rocket.AuthenticationService authenticationService =
+        rocket.AuthenticationService(rocketHttpService);
     return await authenticationService.login(username, password);
   }
 
   void _handleServerEvent(String event) {
     try {
-      final json = jsonDecode(event) as Map;
+      final json = jsonDecode(event) as Map<String, dynamic>;
       final _msg = json['msg'];
       print(json);
       if (_msg == 'result') {
@@ -223,7 +220,10 @@ class _MyHomePageState extends State<MyHomePage> {
       } else if (_msg == 'ping') {
         webSocketService.sendPongMsg(webSocketChannel!);
         pingPongStream.sink.add(event);
-      } else if (_msg == 'changed') {}
+      } else if (_msg == 'changed' &&
+          json['collection'] == 'stream-room-messages') {
+        handleStreamRoomMessage(json);
+      }
     } catch (e) {
       print('${e.toString()}');
     }
@@ -231,10 +231,22 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void handleMessageStream(List listMessage) {
     try {
-      List<Message> list = listMessage.map((e) => Message.fromMap(e)).toList();
-      messagesStream.sink.add(list);
+      final list = listMessage.map((e) => rocket.Message.fromMap(e)).toList();
+      _messages.insertAll(0, [...list]);
+      messagesStream.sink.add(_messages);
     } catch (e) {
       messagesStream.sink.addError(e);
     }
+  }
+
+  void handleStreamRoomMessage(Map<String, dynamic> json) {
+    rocket.Notification notification = rocket.Notification.fromMap(json);
+    final fields = notification.fields;
+    final args = fields?.args ?? [];
+    final msgs = args
+        .map((e) => rocket.Message(id: e.id, msg: e.msg, user: e.user))
+        .toList();
+    _messages.insertAll(0, [...msgs]);
+    messagesStream.sink.add(_messages);
   }
 }
