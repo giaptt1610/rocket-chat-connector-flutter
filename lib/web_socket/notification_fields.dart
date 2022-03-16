@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:rocket_chat_connector_flutter/web_socket/notification_args.dart';
+import 'notification_args.dart';
 
 class NotificationFields {
   String? eventName;
@@ -11,20 +11,16 @@ class NotificationFields {
     this.args,
   });
 
-  NotificationFields.fromMap(Map<String, dynamic>? json) {
-    if (json != null) {
-      eventName = json['eventName'];
-      if (json['args'] != null) {
-        List<dynamic> jsonList = json['args'].runtimeType == String //
-            ? jsonDecode(json['args'])
-            : json['args'];
-        args = jsonList
-            .where((json) => json != null)
-            .map((json) => NotificationArgs.fromMap(json))
-            .toList();
-      } else {
-        args = null;
-      }
+  NotificationFields.fromMap(Map<String, dynamic> json) {
+    eventName = json['eventName'];
+    if (json['args'] != null) {
+      List<dynamic> jsonList = json['args'].runtimeType == String //
+          ? jsonDecode(json['args'])
+          : json['args'];
+      args = jsonList
+          .where((json) => json != null)
+          .map((json) => NotificationArgs.fromMap(json))
+          .toList();
     }
   }
 

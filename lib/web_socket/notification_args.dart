@@ -1,10 +1,16 @@
-import 'package:rocket_chat_connector_flutter/web_socket/notification_payload.dart';
+import '../models/user.dart';
+import 'notification_payload.dart';
 
 class NotificationArgs {
   String? title;
   String? text;
   DateTime? ts;
   NotificationPayload? payload;
+  String? id;
+  String? rid;
+  String? msg;
+  User? user;
+  DateTime? updatedAt;
 
   NotificationArgs({
     this.title,
@@ -13,18 +19,25 @@ class NotificationArgs {
   });
 
   NotificationArgs.fromMap(Map<String, dynamic> json) {
-    if (json != null) {
-      title = json['title'];
-      text = json['text'];
-      ts = DateTime.now();
-      payload = json['payload'] != null
-          ? NotificationPayload.fromMap(json['payload'])
-          : null;
+    title = json['title'];
+    text = json['text'];
+    ts = DateTime.now();
+    id = json['_id'];
+    rid = json['rid'];
+    msg = json['msg'];
+    user = json['u'] != null ? User.fromMap(json['u']) : null;
+    if (json['_updatedAt']['\$date'] != null) {
+      updatedAt =
+          DateTime.fromMillisecondsSinceEpoch(json['_updatedAt']['\$date']);
     }
+
+    payload = json['payload'] != null
+        ? NotificationPayload.fromMap(json['payload'])
+        : null;
   }
 
   @override
   String toString() {
-    return 'NotificationArgs{title: $title, text: $text, ts: $ts, payload: $payload}';
+    return 'NotificationArgs{title: $title, text: $text, ts: $ts, payload: $payload, msg: $msg}';
   }
 }

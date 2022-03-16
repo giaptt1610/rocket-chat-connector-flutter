@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
-import 'package:rocket_chat_connector_flutter/web_socket/notification_fields.dart';
-import 'package:rocket_chat_connector_flutter/web_socket/notification_result.dart';
-import 'package:rocket_chat_connector_flutter/web_socket/notification_type.dart';
+import 'notification_fields.dart';
+import 'notification_result.dart';
+import 'notification_type.dart';
 
 class Notification {
   NotificationType? msg;
@@ -25,21 +25,19 @@ class Notification {
   });
 
   Notification.fromMap(Map<String, dynamic> json) {
-    if (json != null) {
-      msg = notificationTypeFromString(json['msg']);
-      collection = json['collection'];
-      serverId = json['server_id'];
-      subs = json['subs'] != null ? List<String>.from(json['subs']) : null;
-      methods =
-          json['methods'] != null ? List<String>.from(json['methods']) : null;
-      id = json["id"];
-      fields = json['fields'] != null
-          ? NotificationFields.fromMap(json["fields"])
-          : null;
-      result = json['result'] != null
-          ? NotificationResult.fromMap(json['result'])
-          : null;
-    }
+    msg = notificationTypeFromString(json['msg']);
+    collection = json['collection'];
+    serverId = json['server_id'];
+    subs = json['subs'] != null ? List<String>.from(json['subs']) : null;
+    methods =
+        json['methods'] != null ? List<String>.from(json['methods']) : null;
+    id = json["id"];
+    fields = json['fields'] != null
+        ? NotificationFields.fromMap(json["fields"])
+        : null;
+    result = json['result'] != null
+        ? NotificationResult.fromMap(json['result'])
+        : null;
   }
 
   @override
