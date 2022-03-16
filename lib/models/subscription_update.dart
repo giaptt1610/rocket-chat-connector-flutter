@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:rocket_chat_connector_flutter/models/user.dart';
+import 'user.dart';
 
 class SubscriptionUpdate {
   String? id;
@@ -38,34 +38,31 @@ class SubscriptionUpdate {
   });
 
   SubscriptionUpdate.fromMap(Map<String, dynamic> json) {
-    if (json != null) {
-      id = json['_id'];
-      open = json['open'];
-      alert = json['alert'];
-      unread = json['unread'];
-      userMentions = json['userMentions'];
-      groupMentions = json['groupMentions'];
-      ts = json['ts'] != null ? DateTime.parse(json['ts']) : null;
-      rid = json['rid'];
-      name = json['name'];
-      fName = json['fName'];
-      t = json['t'];
-      u = json['u'] != null ? User.fromMap(json['u']) : null;
-      ls = json['ls'] != null ? DateTime.parse(json['ls']) : null;
-      updatedAt = json['_updatedAt'] != null
-          ? DateTime.parse(json['_updatedAt'])
-          : null;
-      if (json['roles'] != null) {
-        List<dynamic> jsonList = json['roles'].runtimeType == String //
-            ? jsonDecode(json['roles'])
-            : json['roles'];
-        roles = jsonList
-            .where((json) => json != null)
-            .map((value) => value.toString())
-            .toList();
-      } else {
-        roles = null;
-      }
+    id = json['_id'];
+    open = json['open'];
+    alert = json['alert'];
+    unread = json['unread'];
+    userMentions = json['userMentions'];
+    groupMentions = json['groupMentions'];
+    ts = json['ts'] != null ? DateTime.parse(json['ts']) : null;
+    rid = json['rid'];
+    name = json['name'];
+    fName = json['fName'];
+    t = json['t'];
+    u = json['u'] != null ? User.fromMap(json['u']) : null;
+    ls = json['ls'] != null ? DateTime.parse(json['ls']) : null;
+    updatedAt =
+        json['_updatedAt'] != null ? DateTime.parse(json['_updatedAt']) : null;
+    if (json['roles'] != null) {
+      List<dynamic> jsonList = json['roles'].runtimeType == String //
+          ? jsonDecode(json['roles'])
+          : json['roles'];
+      roles = jsonList
+          .where((json) => json != null)
+          .map((value) => value.toString())
+          .toList();
+    } else {
+      roles = null;
     }
   }
 

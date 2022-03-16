@@ -32,26 +32,19 @@ class Authentication {
 }
 
 class _Data {
-  String? authToken;
-  String? userId;
-  User? me;
+  String authToken;
+  String userId;
+  User me;
 
-  _Data({
-    this.authToken,
-    this.userId,
-    this.me,
-  });
-
-  _Data.fromMap(Map<String, dynamic> json) {
-    authToken = json['authToken'];
-    userId = json['userId'];
-    me = json['me'] != null ? User.fromMap(json['me']) : null;
-  }
+  _Data.fromMap(Map<String, dynamic> json)
+      : authToken = json['authToken'],
+        userId = json['userId'],
+        me = User.fromMap(json['me']);
 
   Map<String, dynamic> toMap() => {
         'authToken': authToken,
         'userId': userId,
-        'me': me != null ? me!.toMap() : null,
+        'me': me.toMap(),
       };
 
   @override

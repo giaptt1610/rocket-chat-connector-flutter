@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
-import 'package:rocket_chat_connector_flutter/models/message_attachment_field.dart';
+import 'message_attachment_field.dart';
 
 class MessageAttachment {
   String? audioUrl;
@@ -41,36 +41,34 @@ class MessageAttachment {
   });
 
   MessageAttachment.fromMap(Map<String, dynamic> json) {
-    if (json != null) {
-      audioUrl = json['audio_url'];
-      authorIcon = json['author_icon'];
-      authorLink = json['author_link'];
-      authorName = json['author_name'];
-      collapsed = json['collapsed'];
-      color = json['color'];
+    audioUrl = json['audio_url'];
+    authorIcon = json['author_icon'];
+    authorLink = json['author_link'];
+    authorName = json['author_name'];
+    collapsed = json['collapsed'];
+    color = json['color'];
 
-      if (json['fields'] != null) {
-        List<dynamic> jsonList = json['fields'].runtimeType == String //
-            ? jsonDecode(json['fields'])
-            : json['fields'];
-        fields = jsonList
-            .where((json) => json != null)
-            .map((json) => MessageAttachmentField.fromMap(json))
-            .toList();
-      } else {
-        fields = null;
-      }
-
-      imageUrl = json['image_url'];
-      messageLink = json['message_link'];
-      text = json['text'];
-      thumbUrl = json['thumb_url'];
-      title = json['title'];
-      titleLink = json['title_link'];
-      titleLinkDownload = json['title_link_download'];
-      ts = DateTime.parse(json['ts']);
-      videoUrl = json['video_url'];
+    if (json['fields'] != null) {
+      List<dynamic> jsonList = json['fields'].runtimeType == String //
+          ? jsonDecode(json['fields'])
+          : json['fields'];
+      fields = jsonList
+          .where((json) => json != null)
+          .map((json) => MessageAttachmentField.fromMap(json))
+          .toList();
+    } else {
+      fields = null;
     }
+
+    imageUrl = json['image_url'];
+    messageLink = json['message_link'];
+    text = json['text'];
+    thumbUrl = json['thumb_url'];
+    title = json['title'];
+    titleLink = json['title_link'];
+    titleLinkDownload = json['title_link_download'];
+    ts = DateTime.parse(json['ts']);
+    videoUrl = json['video_url'];
   }
 
   Map<String, dynamic> toMap() => {

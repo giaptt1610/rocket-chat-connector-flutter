@@ -8,9 +8,7 @@ class Reaction {
   });
 
   Reaction.fromMap(Map<String, dynamic> json) {
-    if (json != null) {
-      usernames = List<String>.from(json['usernames']);
-    }
+    usernames = List<String>.from(json['usernames']);
   }
 
   Map<String, dynamic> toMap() {

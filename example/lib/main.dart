@@ -68,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
           if (snapshot.hasData) {
             authData = snapshot.data!;
             user = authData!.data!.me;
-            final _authToken = authData!.data!.authToken!;
+            final _authToken = authData!.data!.authToken;
             webSocketChannel =
                 webSocketService.connectToWebSocket(webSocketUrl, _authToken);
 
