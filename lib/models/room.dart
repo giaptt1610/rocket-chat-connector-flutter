@@ -27,23 +27,33 @@ class Room {
     this.name,
   });
 
-  Room.fromMap(Map<String, dynamic>? json) {
-    if (json != null) {
-      id = json['_id'];
-      rid = json['rid'];
-      updatedAt = json['_updatedAt'] != null
-          ? DateTime.parse(json['_updatedAt'])
-          : null;
-      t = json['t'];
-      msgs = json['msgs'];
-      ts = DateTime.parse(json['ts']);
-      lm = DateTime.parse(json['lm']);
-      topic = json['topic'];
-      usernames =
-          usernames != null ? List<String>.from(json['usernames']) : null;
-      fname = json['fname'];
-      name = json['name'];
+  Room.fromMap(Map<String, dynamic> json) {
+    id = json['_id'];
+    rid = json['rid'];
+    updatedAt = DateTime.tryParse(json['_updatedAt']);
+    t = json['t'];
+    msgs = json['msgs'];
+    ts = DateTime.tryParse(json['ts']);
+    lm = DateTime.tryParse(json['lm']);
+    topic = json['topic'];
+    usernames =
+        json['usernames'] != null ? List<String>.from(json['usernames']) : null;
+    fname = json['fname'];
+    name = json['name'];
+  }
+
+  String getRoomName(String me) {
+    if (t == 'd') {
+      final users = usernames ?? [];
+      return users.firstWhere((element) => element != me,
+          orElse: () => 'unknown');
+    } else if (t == 'c') {
+      return id!;
+    } else if (t == 'p') {
+      return fname!;
     }
+
+    return 'unknown';
   }
 
   Map<String, dynamic> toMap() {

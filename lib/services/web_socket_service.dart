@@ -5,36 +5,45 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import '../rocket_chat_connector.dart';
 
 class WebSocketService {
-  WebSocketChannel connectToWebSocket(String url, String authToken) {
-    WebSocketChannel webSocketChannel = IOWebSocketChannel.connect(url);
-    _sendConnectRequest(webSocketChannel);
-    _sendLoginRequest(webSocketChannel, authToken);
-    return webSocketChannel;
+  final WebSocketChannel _channel;
+  late Stream _broadcastStream;
+
+  WebSocketService(String url) : _channel = IOWebSocketChannel.connect(url) {
+    _broadcastStream = _channel.stream.asBroadcastStream();
   }
 
-  void _sendConnectRequest(WebSocketChannel webSocketChannel) {
-    Map msg = {
+  Stream get stream => _broadcastStream;
+
+  void dispose() {
+    _channel.sink.close();
+  }
+
+  WebSocketChannel connectToWebSocket(String authToken) {
+    _sendConnectRequest();
+    _sendLoginRequest(authToken);
+    return _channel;
+  }
+
+  void _sendConnectRequest() {
+    _channel.sink.add(jsonEncode({
       "msg": "connect",
       "version": "1",
       "support": ["1", "pre2", "pre1"]
-    };
-    webSocketChannel.sink.add(jsonEncode(msg));
+    }));
   }
 
-  void _sendLoginRequest(WebSocketChannel webSocketChannel, String authToken) {
-    Map msg = {
+  void _sendLoginRequest(String authToken) {
+    _channel.sink.add(jsonEncode({
       "msg": "method",
       "method": "login",
       "id": "42",
       "params": [
         {"resume": authToken}
       ]
-    };
-
-    webSocketChannel.sink.add(jsonEncode(msg));
+    }));
   }
 
-  void streamNotifyUserSubscribe(WebSocketChannel webSocketChannel, User user) {
+  void streamNotifyUserSubscribe(User user) {
     Map msg = {
       "msg": "sub",
       "id": user.id! + "subscription-id",
@@ -42,51 +51,46 @@ class WebSocketService {
       "params": [user.id! + "/notification", false]
     };
 
-    webSocketChannel.sink.add(jsonEncode(msg));
+    _channel.sink.add(jsonEncode(msg));
   }
 
-  void streamChannelMessagesSubscribe(
-      WebSocketChannel webSocketChannel, Channel channel) {
+  void streamChannelMessagesSubscribe(Channel channel) {
     Map msg = {
       "msg": "sub",
       "id": channel.id! + "subscription-id",
       "name": "stream-room-messages",
       "params": [channel.id, false]
     };
-    webSocketChannel.sink.add(jsonEncode(msg));
+    _channel.sink.add(jsonEncode(msg));
   }
 
-  void streamChannelMessagesUnsubscribe(
-      WebSocketChannel webSocketChannel, Channel channel) {
+  void streamChannelMessagesUnsubscribe(Channel channel) {
     Map msg = {
       "msg": "unsub",
       "id": channel.id! + "subscription-id",
     };
-    webSocketChannel.sink.add(jsonEncode(msg));
+    _channel.sink.add(jsonEncode(msg));
   }
 
-  void streamRoomMessagesSubscribe(
-      WebSocketChannel webSocketChannel, Room room) {
+  void streamRoomMessagesSubscribe(Room room) {
     Map msg = {
       "msg": "sub",
       "id": room.id! + "subscription-id",
       "name": "stream-room-messages",
       "params": [room.id, false]
     };
-    webSocketChannel.sink.add(jsonEncode(msg));
+    _channel.sink.add(jsonEncode(msg));
   }
 
-  void streamRoomMessagesUnsubscribe(
-      WebSocketChannel webSocketChannel, Room room) {
+  void streamRoomMessagesUnsubscribe(Room room) {
     Map msg = {
       "msg": "unsub",
       "id": room.id! + "subscription-id",
     };
-    webSocketChannel.sink.add(jsonEncode(msg));
+    _channel.sink.add(jsonEncode(msg));
   }
 
-  void sendMessageOnChannel(
-      String message, WebSocketChannel webSocketChannel, Channel channel) {
+  void sendMessageOnChannel(String message, Channel channel) {
     Map msg = {
       "msg": "method",
       "method": "sendMessage",
@@ -96,11 +100,10 @@ class WebSocketService {
       ]
     };
 
-    webSocketChannel.sink.add(jsonEncode(msg));
+    _channel.sink.add(jsonEncode(msg));
   }
 
-  void sendMessageOnRoom(
-      String message, WebSocketChannel webSocketChannel, Room room) {
+  void sendMessageOnRoom(String message, Room room) {
     Map msg = {
       "msg": "method",
       "method": "sendMessage",
@@ -110,25 +113,24 @@ class WebSocketService {
       ]
     };
 
-    webSocketChannel.sink.add(jsonEncode(msg));
+    _channel.sink.add(jsonEncode(msg));
   }
 
-  void sendUserPresence(WebSocketChannel webSocketChannel) {
+  void sendUserPresence() {
     Map msg = {
       "msg": "method",
       "method": "UserPresence:setDefaultStatus",
       "id": "42",
       "params": ["online"]
     };
-    webSocketChannel.sink.add(jsonEncode(msg));
+    _channel.sink.add(jsonEncode(msg));
   }
 
-  void sendPongMsg(WebSocketChannel webSocketChannel) {
-    webSocketChannel.sink.add(jsonEncode({'msg': 'pong'}));
+  void sendPongMsg() {
+    _channel.sink.add(jsonEncode({'msg': 'pong'}));
   }
 
   void loadHistory(
-    WebSocketChannel webSocketChannel,
     Room room, {
     int limit = 50,
   }) {
@@ -143,6 +145,6 @@ class WebSocketService {
         {"\$date": 1480377601}
       ]
     };
-    webSocketChannel.sink.add(jsonEncode(msg));
+    _channel.sink.add(jsonEncode(msg));
   }
 }

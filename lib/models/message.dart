@@ -106,7 +106,7 @@ class Message {
     editedBy = json['editedBy'] != null ? User.fromMap(json['editedBy']) : null;
     editedAt =
         json['editedAt'] != null ? DateTime.parse(json['editedAt']) : null;
-    urls = json['urls'] != null ? List<String>.from(json['urls']) : null;
+    // urls = json['urls'] != null ? List<String>.from(json['urls']) : null;
   }
 
   Map<String, dynamic> toMap() {

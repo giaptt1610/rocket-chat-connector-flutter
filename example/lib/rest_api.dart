@@ -15,7 +15,8 @@ import 'package:rocket_chat_connector_flutter/services/http_service.dart'
 import 'package:rocket_chat_connector_flutter/services/message_service.dart';
 import 'package:rocket_chat_connector_flutter/services/subscription_service.dart';
 
-final String serverUrl = "myServerUrl";
+import 'constants.dart';
+// final String serverUrl = "myServerUrl";
 final String username = "myUserName";
 final String password = "myPassword";
 final Channel channel = Channel(id: "myChannelId");

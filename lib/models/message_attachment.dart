@@ -56,8 +56,6 @@ class MessageAttachment {
           .where((json) => json != null)
           .map((json) => MessageAttachmentField.fromMap(json))
           .toList();
-    } else {
-      fields = null;
     }
 
     imageUrl = json['image_url'];
@@ -67,7 +65,9 @@ class MessageAttachment {
     title = json['title'];
     titleLink = json['title_link'];
     titleLinkDownload = json['title_link_download'];
-    ts = DateTime.parse(json['ts']);
+    if (json['ts']['\$date'] != null) {
+      ts = DateTime.fromMillisecondsSinceEpoch(json['ts']['\$date']);
+    }
     videoUrl = json['video_url'];
   }
 
